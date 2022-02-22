@@ -25,7 +25,7 @@ class Trainer():
         df = get_data(nrows=10_000)
 
         #cleaning it
-        clean_data(df, test=False)
+        df =clean_data(df, test=False)
 
         #preparing the features and the target
         self.pipeline = None
@@ -79,8 +79,8 @@ class Trainer():
 
 
 if __name__ == "__main__":
-    # get data
-    # clean data
+   # df = get_data
+    #df = clean_data
     # set X and y
     # hold out
     # train
