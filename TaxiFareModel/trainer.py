@@ -1,5 +1,4 @@
 #imports from custom modules
-from pyexpat import XML_PARAM_ENTITY_PARSING_ALWAYS
 from data import get_data, clean_data
 from encoders import DistanceTransformer, TimeFeaturesEncoder
 from utils import compute_rmse
