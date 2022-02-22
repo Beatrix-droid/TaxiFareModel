@@ -1,16 +1,17 @@
-#imports from custom modules
-from data import get_data, clean_data
-from encoders import DistanceTransformer, TimeFeaturesEncoder
-from utils import compute_rmse
 
+import joblib
+from memoized_property import memoized_property
+from mlflow.tracking import MlflowClient
 
-#sklearn imports
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+from data import clean_data, get_data
+from encoders import DistanceTransformer, TimeFeaturesEncoder
+from utils import compute_rmse
 
 
 class Trainer():
@@ -75,8 +76,31 @@ class Trainer():
         return rmse
 
         """evaluates the pipeline on df_test and return the RMSE"""
+    @memoized_property
+    def mlflow_client(self):
+        mlflow.set_tracking_uri(MLFLOW_URI)
+        return MlflowClient()
 
+    @memoized_property
+    def mlflow_experiment_id(self):
+        try:
+            return self.mlflow_client.create_experiment(self.experiment_name)
+        except BaseException:
+            return self.mlflow_client.get_experiment_by_name(self.experiment_name).experiment_id
 
+    @memoized_property
+    def mlflow_run(self):
+        return self.mlflow_client.create_run(self.mlflow_experiment_id)
+
+    def mlflow_log_param(self, key, value):
+        self.mlflow_client.log_param(self.mlflow_run.info.run_id, key, value)
+
+    def mlflow_log_metric(self, key, value):
+        self.mlflow_client.log_metric(self.mlflow_run.info.run_id, key, value)
+
+    def save_model(self):
+        """ Save the trained model into a model.joblib file """
+        joblib.dump(self.set_pipeline, 'TaxiFareModel.joblib')
 
 if __name__ == "__main__":
    # df = get_data
